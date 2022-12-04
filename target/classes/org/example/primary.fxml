@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: #ECECE7;" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.PrimaryController">
+   <left>
+      <AnchorPane prefHeight="400.0" prefWidth="210.0" BorderPane.alignment="CENTER">
+         <children>
+            <ImageView fitHeight="400.0" fitWidth="246.0" layoutX="-11.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="file:/C:/Users/luisa/OneDrive/Ambiente%20de%20Trabalho/Anti-RansomwareAppMaven/Anti-RansomwareAppMaven/src/main/java/images/aaaa.png" />
+               </image>
+            </ImageView>
+         </children>
+      </AnchorPane>
+   </left>
+   <center>
+      <AnchorPane prefHeight="400.0" prefWidth="427.0" BorderPane.alignment="CENTER">
+         <children>
+            <ImageView fitHeight="88.0" fitWidth="92.0" layoutX="142.0" layoutY="75.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="file:/C:/Users/luisa/OneDrive/Ambiente%20de%20Trabalho/Anti-RansomwareAppMaven/Anti-RansomwareAppMaven/src/main/java/images/cyber-security.png" />
+               </image></ImageView>
+            <Label layoutX="47.0" layoutY="191.0" text="Username">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </Label>
+            <TextField id="username_input" layoutX="127.0" layoutY="188.0" prefHeight="26.0" prefWidth="207.0">
+               <effect>
+                  <Glow />
+               </effect>
+            </TextField>
+            <Label layoutX="47.0" layoutY="230.0" text="Password">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </Label>
+            <PasswordField id="password_input" layoutX="127.0" layoutY="226.0" prefHeight="26.0" prefWidth="206.0">
+               <effect>
+                  <Glow />
+               </effect>
+            </PasswordField>
+            <Button fx:id="loginBTN" blendMode="MULTIPLY" layoutX="47.0" layoutY="281.0" mnemonicParsing="false" onAction="#switchToSecondary" prefHeight="42.0" prefWidth="289.0" text="Login" textFill="#200089" textOverrun="CLIP" />
+            <Button fx:id="registerBTN" blendMode="MULTIPLY" layoutX="47.0" layoutY="333.0" mnemonicParsing="false" prefHeight="42.0" prefWidth="289.0" text="Register" textFill="#200089" textOverrun="CLIP" />
+            <ImageView fitHeight="93.0" fitWidth="114.0" layoutX="32.0" layoutY="72.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="file:/C:/Users/luisa/OneDrive/Ambiente%20de%20Trabalho/Anti-RansomwareAppMaven/Anti-RansomwareAppMaven/src/main/java/images/1090498.png" />
+               </image>
+            </ImageView>
+            <ImageView fitHeight="98.0" fitWidth="94.0" layoutX="242.0" layoutY="72.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="file:/C:/Users/luisa/OneDrive/Ambiente%20de%20Trabalho/Anti-RansomwareAppMaven/Anti-RansomwareAppMaven/src/main/java/images/fechadura.png" />
+               </image>
+            </ImageView>
+         </children>
+      </AnchorPane>
+   </center>
+</BorderPane>
