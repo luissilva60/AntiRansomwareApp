@@ -30,7 +30,7 @@
                   <Font size="14.0" />
                </font>
             </Label>
-            <TextField id="username_input" layoutX="127.0" layoutY="188.0" prefHeight="26.0" prefWidth="207.0">
+            <TextField id="username_input" fx:id="usernameInp" layoutX="127.0" layoutY="188.0" prefHeight="26.0" prefWidth="207.0">
                <effect>
                   <Glow />
                </effect>
@@ -40,7 +40,7 @@
                   <Font size="14.0" />
                </font>
             </Label>
-            <PasswordField id="password_input" layoutX="127.0" layoutY="226.0" prefHeight="26.0" prefWidth="206.0">
+            <PasswordField id="password_input" fx:id="passwordInp" layoutX="127.0" layoutY="226.0" prefHeight="26.0" prefWidth="206.0">
                <effect>
                   <Glow />
                </effect>
