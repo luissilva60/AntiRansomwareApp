@@ -56,7 +56,7 @@ public class PrimaryController {
         try {
 
             Unirest.setTimeouts(0, 0);
-            return Unirest.post("https://projetosd.fly.dev/api/login")
+            return Unirest.post("https://bandini.fly.dev/api/users/login")
                     .field("password", password)
                     .field("email", email)
                     .asJson();
