@@ -1,5 +1,6 @@
 package org.example;
 
+import java.io.File;
 import java.io.IOException;
 
 import com.mashape.unirest.http.HttpResponse;
@@ -8,6 +9,7 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
+import javafx.stage.FileChooser;
 import org.json.JSONArray;
 
 public class PrimaryController {
@@ -15,6 +17,8 @@ public class PrimaryController {
 
     @FXML
     TextField usernameInp, passwordInp;
+    @FXML
+    FileChooser fileChooser = new FileChooser();
 
     @FXML
     private void switchToSecondary() throws IOException {
@@ -56,7 +60,7 @@ public class PrimaryController {
         try {
 
             Unirest.setTimeouts(0, 0);
-            return Unirest.post("https://bandini.fly.dev/api/users/login")
+            return Unirest.post("https://projetosd.fly.dev/api/users/login")
                     .field("password", password)
                     .field("email", email)
                     .asJson();
@@ -65,5 +69,7 @@ public class PrimaryController {
         }
         return null;
     }
+
+
 
 }
