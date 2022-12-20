@@ -2,6 +2,7 @@ package org.example;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
@@ -80,8 +81,8 @@ public class SecondaryController implements Initializable {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Image");
         File imageFile = fileChooser.showOpenDialog(uploadBtn.getScene().getWindow());
-        String path = imageFile.getAbsolutePath();
-        String name = imageFile.getName();
+        String path = imageFile.getAbsolutePath().toString();
+        String name = imageFile.getName().toString();
         String hash = getHash(imageFile);
         JsonNode user = PrimaryController.response.getBody();
         int id = user.getObject().getInt("user_id");
@@ -97,18 +98,18 @@ public class SecondaryController implements Initializable {
     }
 
 
-    private static HttpResponse<String> uploadFile(String url, File file_file, String file_name, String file_path, String file_hash, int file_user_id){
+    private static HttpResponse<InputStream> uploadFile(String url, File file_file, String file_name, String file_path, String file_hash, int file_user_id){
         try {
 
 
             Unirest.setTimeouts(0, 0);
-            HttpResponse<String> response = Unirest.post(url)
+            HttpResponse<InputStream> response = Unirest.post(url)
                     .field("file_file", file_file)
                     .field("file_name", file_name)
                     .field("file_path", file_path)
                     .field("file_hash", file_hash)
                     .field("file_user_id", file_user_id)
-                    .asString();
+                    .asBinary();
 
             return response;
         } catch (UnirestException e) {
@@ -116,9 +117,9 @@ public class SecondaryController implements Initializable {
         }
         return null;
     }
-    public String getHash(File imageFile) throws IOException, NoSuchAlgorithmException {
+    public String getHash(File imgFile) throws IOException, NoSuchAlgorithmException {
         // Load the image file
-        FileInputStream fis = new FileInputStream(imageFile);
+        FileInputStream fis = new FileInputStream(imgFile);
 
 // Create a MessageDigest instance
         MessageDigest md = MessageDigest.getInstance("SHA-256");
