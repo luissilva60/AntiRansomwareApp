@@ -13,12 +13,10 @@ import javafx.stage.FileChooser;
 import org.json.JSONArray;
 
 public class PrimaryController {
-    HttpResponse<JsonNode> response;
+    public static HttpResponse<JsonNode> response;
 
     @FXML
     TextField usernameInp, passwordInp;
-    @FXML
-    FileChooser fileChooser = new FileChooser();
 
     @FXML
     private void switchToSecondary() throws IOException {
