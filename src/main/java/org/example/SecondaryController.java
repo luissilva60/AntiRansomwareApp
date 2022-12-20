@@ -77,12 +77,12 @@ public class SecondaryController implements Initializable {
 
 
     public void uploadImage() throws IOException, NoSuchAlgorithmException {
-        String url = "http://localhost:3000/api/files";
+        String url = "https://projetosd.fly.dev/api/files";
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Image");
         File imageFile = fileChooser.showOpenDialog(uploadBtn.getScene().getWindow());
-        String path = imageFile.getAbsolutePath();
-        String name = imageFile.getName();
+        String path = imageFile.getAbsolutePath().toString();
+        String name = imageFile.getName().toString();
         String hash = getHash(imageFile);
         JsonNode user = PrimaryController.response.getBody();
         int id = user.getObject().getInt("user_id");
@@ -103,7 +103,7 @@ public class SecondaryController implements Initializable {
 
 
             Unirest.setTimeouts(0, 0);
-            HttpResponse<InputStream> response = Unirest.post("http://localhost:3000/api/files")
+            HttpResponse<InputStream> response = Unirest.post(url)
                     .field("file_file", file_file)
                     .field("file_name", file_name)
                     .field("file_path", file_path)
