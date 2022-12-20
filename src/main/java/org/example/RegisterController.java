@@ -17,9 +17,8 @@ public class RegisterController {
     @FXML
     private void register() throws IOException {
 
-        HttpResponse<JsonNode> response = registerUser(username_inp.getText(), email_inp.getText(), password_inp.getText());
+        registerUser(username_inp.getText(), email_inp.getText(), password_inp.getText());
 
-        System.out.println("sucess");
         App.setRoot("primary");
 
         /*if(response.getStatus() == 200){
@@ -34,11 +33,12 @@ public class RegisterController {
         try {
 
             Unirest.setTimeouts(0, 0);
-            return Unirest.post("https://projetosd.fly.dev/api/users")
+            HttpResponse<JsonNode> jsonNodeHttpResponse = Unirest.post("https://projetosd.fly.dev/api/users")
                     .field("user_name", username)
                     .field("user_email", email)
                     .field("user_password", password)
                     .asJson();
+            return jsonNodeHttpResponse;
         } catch (UnirestException e) {
             e.printStackTrace();
         }
