@@ -19,12 +19,15 @@ public class RegisterController {
 
         HttpResponse<JsonNode> response = registerUser(username_inp.getText(), email_inp.getText(), password_inp.getText());
 
-        if(response.getStatus() == 200){
+        System.out.println("sucess");
+        App.setRoot("primary");
+
+        /*if(response.getStatus() == 200){
             System.out.println("ERROR");
         }else{
             System.out.println("sucess");
             App.setRoot("primary");
-        }
+        }*/
     }
 
     private static HttpResponse<JsonNode> registerUser(String username, String email, String password){
