@@ -48,7 +48,7 @@ public class SecondaryController implements Initializable {
         JsonNode user = PrimaryController.response.getBody();
         int userId = user.getObject().getInt("user_id");
         try {
-            response = Unirest.get("http://localhost:3000/api/files/user/"+ userId).asString();
+            response = Unirest.get("https://projetosd.fly.dev/api/files/user/"+ userId).asString();
         } catch (UnirestException e) {
             e.printStackTrace();
         }
@@ -86,7 +86,7 @@ public class SecondaryController implements Initializable {
 
 
     public void uploadBtnEvent() throws IOException, NoSuchAlgorithmException, UnirestException {
-        String url = "http://localhost:3000/api/files";
+        String url = "https://projetosd.fly.dev/api/files";
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Image");
         File imageFile = fileChooser.showOpenDialog(uploadBtn.getScene().getWindow());
@@ -155,7 +155,7 @@ public class SecondaryController implements Initializable {
         try {
             Unirest.setTimeouts(0, 0);
             // Create a POST request to the server with the image data
-            HttpResponse<String> response = Unirest.post("http://localhost:3000/api/files/upload")
+            HttpResponse<String> response = Unirest.post("https://projetosd.fly.dev/api/files/upload")
                     .field("file_file", file)
                     .asString();
 
@@ -181,7 +181,7 @@ public class SecondaryController implements Initializable {
         JsonNode user = PrimaryController.response.getBody();
         int userId = user.getObject().getInt("user_id");
         try {
-            response = Unirest.get("http://localhost:3000/api/files/user/"+ userId).asString();
+            response = Unirest.get("https://projetosd.fly.dev/api/files/user/"+ userId).asString();
         } catch (UnirestException e) {
             e.printStackTrace();
         }
@@ -250,7 +250,7 @@ public class SecondaryController implements Initializable {
         JsonNode user = PrimaryController.response.getBody();
         int userId = user.getObject().getInt("user_id");
         try {
-            response = Unirest.get("http://localhost:3000/api/files/user/"+ userId).asString();
+            response = Unirest.get("https://projetosd.fly.dev/api/files/user/"+ userId).asString();
         } catch (UnirestException e) {
             e.printStackTrace();
         }
