@@ -13,6 +13,11 @@ module org.example {
 
     requires java.sql;
     requires json;
+    requires com.google.api.client;
+    requires org.apache.httpcomponents.httpcore;
+
+    requires httpclient;
+    requires httpmime;
     opens org.example.models.FileResponse;
     exports org.example;
     opens org.example;

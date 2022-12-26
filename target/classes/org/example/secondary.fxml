@@ -17,8 +17,11 @@
         <Label text="Secondary View" />
       <HBox prefHeight="100.0" prefWidth="200.0">
          <children>
-            <Button fx:id="uploadBtn" mnemonicParsing="false" onAction="#uploadImage" prefHeight="50.0" prefWidth="122.0" text=" Upload File" />
-              <Button fx:id="secondaryButton" onAction="#switchToPrimary" prefHeight="51.0" prefWidth="202.0" text="Switch to Primary View" />
+            <Button fx:id="uploadBtn" mnemonicParsing="false" onAction="#uploadBtnEvent" prefHeight="49.0" prefWidth="101.0" text=" Upload File" />
+            <Button fx:id="BackupBtn" mnemonicParsing="false" onAction="#backup" prefHeight="49.0" prefWidth="120.0" text="Start Back-up" />
+            <Button fx:id="stopBackupBtn" mnemonicParsing="false" onAction="#stopBackup" prefHeight="48.0" prefWidth="87.0" text="Stop Back-up" />
+            <Button fx:id="refreshBtn" mnemonicParsing="false" onAction="#refreshTable" prefHeight="49.0" prefWidth="99.0" text="Refresh" />
+              <Button fx:id="secondaryButton" onAction="#switchToPrimary" prefHeight="48.0" prefWidth="111.0" text="Logout" />
          </children>
       </HBox>
     </children>
