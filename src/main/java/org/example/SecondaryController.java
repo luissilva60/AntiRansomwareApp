@@ -1,7 +1,5 @@
 package org.example;
 
-import javax.crypto.*;
-
 import com.google.api.client.json.Json;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
