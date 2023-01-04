@@ -1,7 +1,5 @@
 package org.example;
 
-import javax.crypto.*;
-
 import com.google.api.client.json.Json;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -26,6 +24,8 @@ import javafx.util.Duration;
 import org.example.models.FileResponse.FileResponse;
 import org.json.JSONArray;
 import java.io.StringReader;
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -39,21 +39,27 @@ import java.util.*;
 public class SecondaryController implements Initializable {
     private Timeline timeline;
 
-
+    private static final String token = PrimaryController.response.getBody().getObject().getString("token");
     @FXML
     private TableView<FileResponse> fileTable;
     @FXML
     private TableColumn<FileResponse, String> nameCol, fileCol, pathCol, hashCol;
     public void initialize(URL url, ResourceBundle resourceBundle){
         // Retrieve the data for the table
-        HttpResponse<String> response = null;
+        HttpResponse<JsonNode> response = null;
         JsonNode user = PrimaryController.response.getBody();
         int userId = user.getObject().getInt("user_id");
         try {
-            response = Unirest.get("https://projetosd.fly.dev/api/files/user/"+ userId).asString();
+            response = Unirest.get("https://projetosd.fly.dev/api/files/user/"+ userId)
+                    .header("x-access-token", token).asJson();
+
         } catch (UnirestException e) {
             e.printStackTrace();
         }
+
+        JsonNode data = response.getBody();
+        String encrypted = data.getObject().getString("encryptedData");
+        decrypt(encrypted, )
 
         String jsonArray = response.getBody();
         ObservableList<FileResponse> items = FXCollections.observableArrayList();
@@ -116,7 +122,9 @@ public class SecondaryController implements Initializable {
 
     private static void filePostRequest(String url, String file_link, String file_name, String file_path, String file_hash, int file_user_id) throws IOException, UnirestException {
         Unirest.setTimeouts(0, 0);
+
         HttpResponse<String> response =  Unirest.post(url)
+                .header("x-access-token", token)
                 .field("file_file", file_link)
                 .field("file_name", file_name)
                 .field("file_path", file_path)
@@ -158,6 +166,7 @@ public class SecondaryController implements Initializable {
             Unirest.setTimeouts(0, 0);
             // Create a POST request to the server with the image data
             HttpResponse<String> response = Unirest.post("https://projetosd.fly.dev/api/files/upload")
+                    .header("x-access-token", token)
                     .field("file_file", file)
                     .asString();
 
@@ -252,7 +261,9 @@ public class SecondaryController implements Initializable {
         JsonNode user = PrimaryController.response.getBody();
         int userId = user.getObject().getInt("user_id");
         try {
-            response = Unirest.get("https://projetosd.fly.dev/api/files/user/"+ userId).asString();
+            response = Unirest.get("https://projetosd.fly.dev/api/files/user/"+ userId)
+                    .header("x-access-token", token)
+                .asString();
         } catch (UnirestException e) {
             e.printStackTrace();
         }
@@ -273,5 +284,14 @@ public class SecondaryController implements Initializable {
         hashCol.setCellValueFactory(new PropertyValueFactory<>("file_hash"));
 
     }
+
+    public static String decrypt(String encryptedData, String secret) throws Exception {
+        SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(), "AES");
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        cipher.init(Cipher.DECRYPT_MODE, secretKey);
+        byte[] decryptedData = cipher.doFinal(encryptedData.getBytes());
+        return new String(decryptedData);
+    }
+
 
 }
