@@ -33,7 +33,7 @@ public class RegisterController {
         try {
 
             Unirest.setTimeouts(0, 0);
-            HttpResponse<JsonNode> jsonNodeHttpResponse = Unirest.post("https://projetosd.fly.dev/api/users")
+            HttpResponse<JsonNode> jsonNodeHttpResponse = Unirest.post("https://projetosd.herokuapp.com/api/users")
                     .field("user_name", username)
                     .field("user_email", email)
                     .field("user_password", password)
@@ -43,6 +43,11 @@ public class RegisterController {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @FXML
+    private void goBack() throws IOException {
+        App.setRoot("primary");
     }
 
 }
