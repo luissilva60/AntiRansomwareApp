@@ -2,6 +2,7 @@ module org.example {
     requires javafx.controls;
     requires javafx.fxml;
 
+
     //needed for HTTP
     requires unirest.java;
 
@@ -18,6 +19,8 @@ module org.example {
 
     requires httpclient;
     requires httpmime;
+    requires java.desktop;
+    requires javafx.swing;
     opens org.example.models.FileResponse;
     exports org.example;
     opens org.example;

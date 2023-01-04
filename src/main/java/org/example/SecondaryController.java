@@ -1,5 +1,9 @@
 package org.example;
 
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+import javafx.embed.swing.SwingFXUtils;
+
 import com.google.api.client.json.Json;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -19,6 +23,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.PixelFormat;
+import javafx.scene.image.PixelWriter;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 import org.example.models.FileResponse.Decryptor;
@@ -32,24 +39,33 @@ import javax.crypto.spec.SecretKeySpec;
 
 import java.io.*;
 import java.lang.reflect.Type;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 import static org.example.models.FileResponse.Decryptor.decrypt;
+import static org.example.models.FileResponse.Decryptor.decryptAes256Gcm;
 
 
 public class SecondaryController implements Initializable {
     private Timeline timeline;
+
+    private JsonNode data = PrimaryController.response.getBody();
+
+    private JSONObject user = (JSONObject) data.getObject().get("user");
+
 
     private static final String token = PrimaryController.response.getBody().getObject().getString("token");
     @FXML
     private TableView<FileResponse> fileTable;
     @FXML
     private TableColumn<FileResponse, String> nameCol, fileCol, pathCol, hashCol;
-    public void initialize(URL url, ResourceBundle resourceBundle) {
+   /* public void initialize(URL url, ResourceBundle resourceBundle) {
         // Retrieve the data for the table
 
         JsonNode data = PrimaryController.response.getBody();
@@ -63,8 +79,12 @@ public class SecondaryController implements Initializable {
             e.printStackTrace();
         }
 
-        System.out.println(decrypted);
+        System.out.println("swwwwwwwww"+ decrypted);
+        Gson userdata = new Gson();
+        String s = userdata.toJson(decrypted);
+        System.out.println(s);
         JSONObject userd = new JSONObject(decrypted);
+        System.out.println(userd);
         HttpResponse<String> response = null;
         JsonNode user = PrimaryController.response.getBody();
         int userId = userd.getInt("user_id");
@@ -92,7 +112,46 @@ public class SecondaryController implements Initializable {
             pathCol.setCellValueFactory(new PropertyValueFactory<>("file_path"));
             hashCol.setCellValueFactory(new PropertyValueFactory<>("file_hash"));
         }
-    }
+    }*/
+   public void initialize(URL url, ResourceBundle resourceBundle) {
+       // Retrieve the data for the table
+
+       JsonNode data = PrimaryController.response.getBody();
+       //String encrypted = data.getObject().getString("user");
+
+
+
+
+
+       HttpResponse<String> response = null;
+
+       JSONObject user = (JSONObject) data.getObject().get("user");
+       int userId = user.getInt("user_id");
+       try {
+           response = Unirest.get("https://projetosd.herokuapp.com/api/files/user/" + userId)
+                   .header("x-access-token", token).asString();
+       } catch (UnirestException e) {
+           e.printStackTrace();
+       }
+
+       if (response != null) {
+
+           String jsonArray = response.getBody();
+           ObservableList<FileResponse> items = FXCollections.observableArrayList();
+           // (Parsing the JSON array using Gson)
+           Gson gson = new Gson();
+           Type listType = new TypeToken<ArrayList<FileResponse>>() {}.getType();
+           List<FileResponse> itemList = gson.fromJson(jsonArray, listType);
+           items.addAll(itemList);
+
+           // Set the items and cell value factories for the table and columns
+           fileTable.setItems(items);
+           nameCol.setCellValueFactory(new PropertyValueFactory<>("file_name"));
+           fileCol.setCellValueFactory(new PropertyValueFactory<>("file_file"));
+           pathCol.setCellValueFactory(new PropertyValueFactory<>("file_path"));
+           hashCol.setCellValueFactory(new PropertyValueFactory<>("file_hash"));
+       }
+   }
 
 
     @FXML
@@ -109,15 +168,15 @@ public class SecondaryController implements Initializable {
 
 
     public void uploadBtnEvent() throws IOException, NoSuchAlgorithmException, UnirestException {
-        String url = "https://projetosd.fly.dev/api/files";
+        String url = "https://projetosd.herokuapp.com/api/files";
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Image");
         File imageFile = fileChooser.showOpenDialog(uploadBtn.getScene().getWindow());
         String path = imageFile.getAbsolutePath().toString();
         String name = imageFile.getName().toString();
         String hash = getHash(imageFile);
-        JsonNode user = PrimaryController.response.getBody();
-        int id = user.getObject().getInt("user_id");
+
+        int id = user.getInt("user_id");
         String image_link = imageUpload(imageFile);
         System.out.println(image_link);
 
@@ -204,8 +263,9 @@ public class SecondaryController implements Initializable {
     public  void backup(){
         // Create a timeline that will run the updateTimer function every minute
         HttpResponse<String> response = null;
-        JsonNode user = PrimaryController.response.getBody();
-        int userId = user.getObject().getInt("user_id");
+        int userId = user.getInt("user_id");
+
+
         try {
             response = Unirest.get("https://projetosd.herokuapp.com/api/files/user/"+ userId)
                     .header("x-access-token", token)
@@ -224,7 +284,7 @@ public class SecondaryController implements Initializable {
         timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
             try {
                 updateTimer(items);
-            } catch (NoSuchAlgorithmException | IOException fileNotFoundException) {
+            } catch (NoSuchAlgorithmException | IOException | URISyntaxException fileNotFoundException) {
                 fileNotFoundException.printStackTrace();
             }
         }));
@@ -232,7 +292,7 @@ public class SecondaryController implements Initializable {
         timeline.play(); // Start the timeline
     }
 
-    private static void updateTimer(ObservableList<FileResponse> items) throws IOException, NoSuchAlgorithmException {
+    private static void updateTimer(ObservableList<FileResponse> items) throws IOException, NoSuchAlgorithmException, URISyntaxException {
         // This function will be called every minute
         System.out.println("One minute has passed");
         for (FileResponse file:
@@ -242,18 +302,38 @@ public class SecondaryController implements Initializable {
             String foto = file.getFile_file();
 
             File fis = new File(path);
-            String hashNew = getHash(fis);
-            if(hash.equals(hashNew)){
-                System.out.println("File secure");
-            }else {
-                System.out.println("File has been altered");
-                File newFile = new File(foto);
-                try (FileOutputStream fos = new FileOutputStream(path)) {
-                    fos.write(Files.readAllBytes(newFile.toPath()));
-                } catch (IOException e) {
-                    e.printStackTrace();
+            if(fis.exists()){
+                String hashNew = getHash(fis);
+                if(hash.equals(hashNew)){
+                    System.out.println("File secure");
+                }else {
+                    System.out.println("File has been altered");
+                    URL imageUrl = new URL(foto);
+                    Image image = new Image(imageUrl.toURI().toString());
+                    try (InputStream in = imageUrl.openStream()) {
+                        Files.copy(in, Paths.get(path), StandardCopyOption.REPLACE_EXISTING);
+                    } catch (IOException e) {
+                        // Handle exception
+                    }
                 }
+            }else {
+                System.out.println("File couldnt be located");
+                URL imageUrl = new URL(foto);
+                Image image = new Image(imageUrl.toURI().toString());
+
+                try (InputStream in = imageUrl.openStream()) {
+                    Files.copy(in, Paths.get(path), StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    // Handle exception
+                }
+                /*try {
+                    BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
+                    ImageIO.write(bufferedImage, "jpeg", new File(path));
+                } catch (IOException e) {
+                    // Handle exception
+                }*/
             }
+
 
 
 
@@ -275,8 +355,8 @@ public class SecondaryController implements Initializable {
     public void refreshTable(){
         // Retrieve the data for the table
         HttpResponse<String> response = null;
-        JsonNode user = PrimaryController.response.getBody();
-        int userId = user.getObject().getInt("user_id");
+
+        int userId = user.getInt("user_id");
         try {
             response = Unirest.get("https://projetosd.herokuapp.com/api/files/user/"+ userId)
                     .header("x-access-token", token)
