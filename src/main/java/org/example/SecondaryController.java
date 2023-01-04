@@ -21,8 +21,11 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
+import org.example.models.FileResponse.Decryptor;
 import org.example.models.FileResponse.FileResponse;
 import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.StringReader;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
@@ -35,6 +38,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
+import static org.example.models.FileResponse.Decryptor.decrypt;
+
 
 public class SecondaryController implements Initializable {
     private Timeline timeline;
@@ -44,39 +49,49 @@ public class SecondaryController implements Initializable {
     private TableView<FileResponse> fileTable;
     @FXML
     private TableColumn<FileResponse, String> nameCol, fileCol, pathCol, hashCol;
-    public void initialize(URL url, ResourceBundle resourceBundle){
+    public void initialize(URL url, ResourceBundle resourceBundle) {
         // Retrieve the data for the table
-        HttpResponse<JsonNode> response = null;
-        JsonNode user = PrimaryController.response.getBody();
-        int userId = user.getObject().getInt("user_id");
-        try {
-            response = Unirest.get("https://projetosd.fly.dev/api/files/user/"+ userId)
-                    .header("x-access-token", token).asJson();
 
+        JsonNode data = PrimaryController.response.getBody();
+        String userData = "";
+        String decrypted = "";
+        String encrypted = data.getObject().getString("user");
+        System.out.println(encrypted);
+        try {
+            decrypted = decrypt(encrypted);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        System.out.println(decrypted);
+        JSONObject userd = new JSONObject(decrypted);
+        HttpResponse<String> response = null;
+        JsonNode user = PrimaryController.response.getBody();
+        int userId = userd.getInt("user_id");
+        try {
+            response = Unirest.get("https://projetosd.herokuapp.com/api/files/user/" + userId)
+                    .header("x-access-token", token).asString();
         } catch (UnirestException e) {
             e.printStackTrace();
         }
 
-        JsonNode data = response.getBody();
-        String encrypted = data.getObject().getString("encryptedData");
-        decrypt(encrypted, )
+        if (response != null) {
+            System.out.println(userd);
+            String jsonArray = response.getBody();
+            ObservableList<FileResponse> items = FXCollections.observableArrayList();
+            // (Parsing the JSON array using Gson)
+            Gson gson = new Gson();
+            Type listType = new TypeToken<ArrayList<FileResponse>>() {}.getType();
+            List<FileResponse> itemList = gson.fromJson(jsonArray, listType);
+            items.addAll(itemList);
 
-        String jsonArray = response.getBody();
-        ObservableList<FileResponse> items = FXCollections.observableArrayList();
-        // (Parsing the JSON array using Gson)
-        Gson gson = new Gson();
-        Type listType = new TypeToken<ArrayList<FileResponse>>(){}.getType();
-        List<FileResponse> itemList = gson.fromJson(jsonArray, listType);
-        items.addAll(itemList);
-
-        // Set the items and cell value factories for the table and columns
-        fileTable.setItems(items);
-        nameCol.setCellValueFactory(new PropertyValueFactory<>("file_name"));
-        fileCol.setCellValueFactory(new PropertyValueFactory<>("file_file"));
-        pathCol.setCellValueFactory(new PropertyValueFactory<>("file_path"));
-        hashCol.setCellValueFactory(new PropertyValueFactory<>("file_hash"));
-
-
+            // Set the items and cell value factories for the table and columns
+            fileTable.setItems(items);
+            nameCol.setCellValueFactory(new PropertyValueFactory<>("file_name"));
+            fileCol.setCellValueFactory(new PropertyValueFactory<>("file_file"));
+            pathCol.setCellValueFactory(new PropertyValueFactory<>("file_path"));
+            hashCol.setCellValueFactory(new PropertyValueFactory<>("file_hash"));
+        }
     }
 
 
@@ -165,7 +180,7 @@ public class SecondaryController implements Initializable {
         try {
             Unirest.setTimeouts(0, 0);
             // Create a POST request to the server with the image data
-            HttpResponse<String> response = Unirest.post("https://projetosd.fly.dev/api/files/upload")
+            HttpResponse<String> response = Unirest.post("https://projetosd.herokuapp.com/api/files/upload")
                     .header("x-access-token", token)
                     .field("file_file", file)
                     .asString();
@@ -192,7 +207,9 @@ public class SecondaryController implements Initializable {
         JsonNode user = PrimaryController.response.getBody();
         int userId = user.getObject().getInt("user_id");
         try {
-            response = Unirest.get("https://projetosd.fly.dev/api/files/user/"+ userId).asString();
+            response = Unirest.get("https://projetosd.herokuapp.com/api/files/user/"+ userId)
+                    .header("x-access-token", token)
+                    .asString();
         } catch (UnirestException e) {
             e.printStackTrace();
         }
@@ -261,7 +278,7 @@ public class SecondaryController implements Initializable {
         JsonNode user = PrimaryController.response.getBody();
         int userId = user.getObject().getInt("user_id");
         try {
-            response = Unirest.get("https://projetosd.fly.dev/api/files/user/"+ userId)
+            response = Unirest.get("https://projetosd.herokuapp.com/api/files/user/"+ userId)
                     .header("x-access-token", token)
                 .asString();
         } catch (UnirestException e) {
@@ -285,13 +302,8 @@ public class SecondaryController implements Initializable {
 
     }
 
-    public static String decrypt(String encryptedData, String secret) throws Exception {
-        SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(), "AES");
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipher.init(Cipher.DECRYPT_MODE, secretKey);
-        byte[] decryptedData = cipher.doFinal(encryptedData.getBytes());
-        return new String(decryptedData);
-    }
+
+
 
 
 }

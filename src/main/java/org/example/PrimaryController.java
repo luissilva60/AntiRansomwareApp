@@ -63,7 +63,7 @@ public class PrimaryController {
         try {
 
             Unirest.setTimeouts(0, 0);
-            return Unirest.post("https://projetosd.fly.dev/api/users/login")
+            return Unirest.post("https://projetosd.herokuapp.com/api/users/login")
                     .field("password", password)
                     .field("email", email)
                     .asJson();
