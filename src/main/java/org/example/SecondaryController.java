@@ -1,13 +1,8 @@
 package org.example;
 
-import java.awt.image.BufferedImage;
-import javax.imageio.ImageIO;
-
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.embed.swing.SwingFXUtils;
 
-import com.google.api.client.json.Json;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.mashape.unirest.http.HttpResponse;
@@ -26,21 +21,11 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.Image;
-import javafx.scene.image.PixelFormat;
-import javafx.scene.image.PixelWriter;
-import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import javafx.util.Duration;
-import org.example.models.FileResponse.Decryptor;
 import org.example.models.FileResponse.FileResponse;
-import org.json.JSONArray;
 import org.json.JSONObject;
-
-import java.io.StringReader;
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -53,9 +38,6 @@ import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-
-import static org.example.models.FileResponse.Decryptor.decrypt;
-import static org.example.models.FileResponse.Decryptor.decryptAes256Gcm;
 
 
 public class SecondaryController implements Initializable {
@@ -248,7 +230,7 @@ public class SecondaryController implements Initializable {
         String hash = getHash(imageFile);
 
         int id = user.getInt("user_id");
-        String image_link = imageUpload(imageFile);
+        String image_link = imageOnlyUpload(imageFile);
         System.out.println(image_link);
 
 
@@ -279,6 +261,20 @@ public class SecondaryController implements Initializable {
         int status = response.getStatus();
         System.out.println("Status: " + status);
 
+        if(status == 200){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Informação");
+            alert.setHeaderText(null);
+            alert.setContentText("Ficheiro uploaded com sucesso.");
+            alert.showAndWait();
+        }else{
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Informação");
+            alert.setHeaderText(null);
+            alert.setContentText("Não foi posível dar upload. Tente de novo mais tarde");
+            alert.showAndWait();
+        }
+
     }
     public static String getHash(File imgFile) throws IOException, NoSuchAlgorithmException {
         // Load the image file
@@ -306,7 +302,7 @@ public class SecondaryController implements Initializable {
 
         return hashString;
     }
-    public static String imageUpload(File file){
+    public static String imageOnlyUpload(File file){
         try {
             Unirest.setTimeouts(0, 0);
             // Create a POST request to the server with the image data
@@ -330,6 +326,7 @@ public class SecondaryController implements Initializable {
         }
         return null;
     }
+    @FXML private  Label secondary;
 
     public  void backup(){
         // Create a timeline that will run the updateTimer function every minute
@@ -354,6 +351,11 @@ public class SecondaryController implements Initializable {
         items.addAll(itemList);
         timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
             try {
+                long elapsedMillis = (long) timeline.getCurrentTime().toMillis();
+                long elapsedSeconds = elapsedMillis / 1000;
+                long elapsedMinutes = elapsedSeconds / 60;
+                long elapsedHours = elapsedMinutes / 60;
+                secondary.setText(String.format("Time elapsed: %02d:%02d:%02d", elapsedHours, elapsedMinutes, elapsedSeconds));
                 updateTimer(items);
             } catch (NoSuchAlgorithmException | IOException | URISyntaxException fileNotFoundException) {
                 fileNotFoundException.printStackTrace();
@@ -362,7 +364,7 @@ public class SecondaryController implements Initializable {
         timeline.setCycleCount(Animation.INDEFINITE); // Run indefinitely
         timeline.play(); // Start the timeline
     }
-    @FXML private static Label secondary;
+
 
     private static void updateTimer(ObservableList<FileResponse> items) throws IOException, NoSuchAlgorithmException, URISyntaxException {
         // This function will be called every minute
@@ -387,8 +389,7 @@ public class SecondaryController implements Initializable {
                         alert.setTitle("Alerta de Deteção de Atividade Anómala");
                         alert.setHeaderText(null);
                         alert.setContentText(file.getFile_name() + " has been altered. Backing-up to pc.");
-                        secondary.setText(file.getFile_name() + " has been altered. Backing-up to pc.");
-                        secondary.setTextFill(Color.RED);
+                        alert.show();
 
                     } catch (IOException e) {
                         // Handle exception
@@ -405,6 +406,7 @@ public class SecondaryController implements Initializable {
                     alert.setTitle("Alerta de Deteção de Atividade Anómala");
                     alert.setHeaderText(null);
                     alert.setContentText(file.getFile_name() + " has been altered. Backing-up to pc.");
+                    alert.show();
 
                     
                 } catch (IOException e) {
@@ -468,7 +470,7 @@ public class SecondaryController implements Initializable {
             public ObservableValue<Button> call(TableColumn.CellDataFeatures<FileResponse, Button> features) {
                 FileResponse fileResponse = features.getValue();
 
-                Button button = new Button("Click Me");
+                Button button = new Button("Delete");
                 button.setOnAction(new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent event) {

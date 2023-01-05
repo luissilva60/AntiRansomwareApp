@@ -11,7 +11,7 @@
           <TableColumn fx:id="nameCol" prefWidth="88.0" text="Name" />
           <TableColumn fx:id="fileCol" minWidth="0.0" prefWidth="110.0" text="File" />
             <TableColumn fx:id="pathCol" minWidth="0.0" prefWidth="271.0" text="Path" />
-            <TableColumn fx:id="hashCol" minWidth="0.0" prefWidth="118.0" text="Hash" />
+            <TableColumn fx:id="hashCol" minWidth="0.0" prefWidth="118.0" />
         </columns>
       </TableView>
         <Label fx:id="secondary" text="Secondary View" />
