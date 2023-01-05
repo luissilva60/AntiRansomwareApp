@@ -2,6 +2,9 @@ package org.example;
 
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
+
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.embed.swing.SwingFXUtils;
 
 import com.google.api.client.json.Json;
@@ -17,16 +20,18 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.PixelWriter;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
+import javafx.util.Callback;
 import javafx.util.Duration;
 import org.example.models.FileResponse.Decryptor;
 import org.example.models.FileResponse.FileResponse;
@@ -39,6 +44,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import java.io.*;
 import java.lang.reflect.Type;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -64,7 +70,10 @@ public class SecondaryController implements Initializable {
     @FXML
     private TableView<FileResponse> fileTable;
     @FXML
-    private TableColumn<FileResponse, String> nameCol, fileCol, pathCol, hashCol;
+    private TableColumn<FileResponse, String> nameCol, fileCol, pathCol;
+
+    @FXML private TableColumn<FileResponse, Button> hashCol;
+
    /* public void initialize(URL url, ResourceBundle resourceBundle) {
         // Retrieve the data for the table
 
@@ -149,10 +158,72 @@ public class SecondaryController implements Initializable {
            nameCol.setCellValueFactory(new PropertyValueFactory<>("file_name"));
            fileCol.setCellValueFactory(new PropertyValueFactory<>("file_file"));
            pathCol.setCellValueFactory(new PropertyValueFactory<>("file_path"));
-           hashCol.setCellValueFactory(new PropertyValueFactory<>("file_hash"));
+           hashCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<FileResponse, Button>, ObservableValue<Button>>() {
+               @Override
+               public ObservableValue<Button> call(TableColumn.CellDataFeatures<FileResponse, Button> features) {
+                   FileResponse fileResponse = features.getValue();
+
+                   Button button = new Button("Delete");
+                   button.setOnAction(new EventHandler<ActionEvent>() {
+                       @Override
+                       public void handle(ActionEvent event) {
+                           // This is the function that will be called when the button is clicked
+                           try {
+                               buttonEvent(fileResponse);
+                           } catch (IOException e) {
+                               e.printStackTrace();
+                           } catch (UnirestException e) {
+                               e.printStackTrace();
+                           }
+                       }
+                   });
+
+                   return new SimpleObjectProperty<>(button);
+               }
+           });
+       }
+   }
+   public void buttonEvent(FileResponse fileResponse) throws IOException, UnirestException {
+       System.out.println("yooooooo");
+
+
+       Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+       alert.setTitle("Confirmation Dialog");
+       alert.setHeaderText(null);
+       alert.setContentText("Are you sure you want to do this?");
+
+       ButtonType buttonYes = new ButtonType("Yes");
+       ButtonType buttonNo = new ButtonType("No");
+       ButtonType buttonCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+       alert.getButtonTypes().setAll(buttonYes, buttonNo, buttonCancel);
+
+       Optional<ButtonType> result = alert.showAndWait();
+       if (result.get() == buttonYes) {
+           // User clicked "Yes" button
+           // Perform some action
+           System.out.println("You clicked yes");
+           fileDeleteRequest(fileResponse.getFile_id());
+       } else if (result.get() == buttonNo) {
+           // User clicked "No" button
+           // Perform some action
+           System.out.println("You clicked No");
+       } else {
+           // User clicked "Cancel" or closed the dialog
+           // Perform some action
+           System.out.println("You clicked cancel");
        }
    }
 
+    private static void fileDeleteRequest(int id) throws IOException, UnirestException {
+        Unirest.setTimeouts(0, 0);
+
+        HttpResponse<String> response =  Unirest.delete("https://projetosd.herokuapp.com/api/files/"+ id)
+                .header("x-access-token", token)
+                .asString();
+        int status = response.getStatus();
+        System.out.println("Status: " + status);
+
+    }
 
     @FXML
     private void switchToPrimary() throws IOException {
@@ -291,6 +362,7 @@ public class SecondaryController implements Initializable {
         timeline.setCycleCount(Animation.INDEFINITE); // Run indefinitely
         timeline.play(); // Start the timeline
     }
+    @FXML private static Label secondary;
 
     private static void updateTimer(ObservableList<FileResponse> items) throws IOException, NoSuchAlgorithmException, URISyntaxException {
         // This function will be called every minute
@@ -308,23 +380,36 @@ public class SecondaryController implements Initializable {
                     System.out.println("File secure");
                 }else {
                     System.out.println("File has been altered");
-                    URL imageUrl = new URL(foto);
-                    Image image = new Image(imageUrl.toURI().toString());
-                    try (InputStream in = imageUrl.openStream()) {
+                    URI imageUri = new URI(foto);
+                    try (InputStream in = imageUri.toURL().openStream()) {
                         Files.copy(in, Paths.get(path), StandardCopyOption.REPLACE_EXISTING);
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                        alert.setTitle("Alerta de Deteção de Atividade Anómala");
+                        alert.setHeaderText(null);
+                        alert.setContentText(file.getFile_name() + " has been altered. Backing-up to pc.");
+                        secondary.setText(file.getFile_name() + " has been altered. Backing-up to pc.");
+                        secondary.setTextFill(Color.RED);
+
                     } catch (IOException e) {
                         // Handle exception
+                        e.printStackTrace();
                     }
                 }
             }else {
-                System.out.println("File couldnt be located");
-                URL imageUrl = new URL(foto);
-                Image image = new Image(imageUrl.toURI().toString());
-
-                try (InputStream in = imageUrl.openStream()) {
+                System.out.println("File has been altered");
+                URI imageUri = new URI(foto);
+                try (InputStream in = imageUri.toURL().openStream()) {
                     Files.copy(in, Paths.get(path), StandardCopyOption.REPLACE_EXISTING);
+                    System.out.println("Back-up done!");
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Alerta de Deteção de Atividade Anómala");
+                    alert.setHeaderText(null);
+                    alert.setContentText(file.getFile_name() + " has been altered. Backing-up to pc.");
+
+                    
                 } catch (IOException e) {
                     // Handle exception
+                    e.printStackTrace();
                 }
                 /*try {
                     BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
@@ -378,7 +463,29 @@ public class SecondaryController implements Initializable {
         nameCol.setCellValueFactory(new PropertyValueFactory<>("file_name"));
         fileCol.setCellValueFactory(new PropertyValueFactory<>("file_file"));
         pathCol.setCellValueFactory(new PropertyValueFactory<>("file_path"));
-        hashCol.setCellValueFactory(new PropertyValueFactory<>("file_hash"));
+        hashCol.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<FileResponse, Button>, ObservableValue<Button>>() {
+            @Override
+            public ObservableValue<Button> call(TableColumn.CellDataFeatures<FileResponse, Button> features) {
+                FileResponse fileResponse = features.getValue();
+
+                Button button = new Button("Click Me");
+                button.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent event) {
+                        // This is the function that will be called when the button is clicked
+                        try {
+                            buttonEvent(fileResponse);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (UnirestException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
+                return new SimpleObjectProperty<>(button);
+            }
+        });
 
     }
 
